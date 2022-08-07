@@ -2,3 +2,4 @@
 elasticsearch/node01/
 elasticsearch/node02/
 elasticsearch/node03/
+metricbeat/metricbeat-data/

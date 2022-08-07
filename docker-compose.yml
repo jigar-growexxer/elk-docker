@@ -91,7 +91,6 @@ services:
     networks:
       - elastic
       
-  #https://quoeamaster.medium.com/deploying-metricbeat-side-by-side-with-elasticsearch-in-docker-42c769d95be
   metricbeat:
     container_name: metricbeat
     #image: docker.elastic.co/beats/metricbeat:8.3.3
@@ -136,7 +135,30 @@ services:
       - node01
     networks:
       - elastic    
-
+  filebeat:
+    container_name: filebeat
+    build:
+      context: ./filebeat
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    user: root
+    command:
+      - -e
+      - --strict.perms=false
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro,Z
+      - type: bind
+        source: /var/lib/docker/containers
+        target: /var/lib/docker/containers
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    networks:
+      - elastic
+    depends_on:
+      - node01
 volumes:
   data01: 
     driver: local
