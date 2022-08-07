@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  node01:
+    container_name: node01
+    mem_limit: 2g
+    #image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build:
+      context: elasticsearch/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    ports:
+      - '$ES_PORT:9200'
+    environment:
+      - cluster.name=${CLUSTER_NAME}
+      - node.name=node01
+      - discovery.seed_hosts=node02,node03 
+      - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+      - ./elasticsearch/data01:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+
+  node02:
+    container_name: node02
+    mem_limit: 2g
+    #image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build:
+      context: elasticsearch/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    environment:
+      - cluster.name=${CLUSTER_NAME}
+      - node.name=node02
+      - discovery.seed_hosts=node01,node03
+      - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+      - ./elasticsearch/data02:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    
+  node03:
+    container_name: node03
+    mem_limit: 2g
+    #image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build:
+      context: elasticsearch/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    environment:
+      - cluster.name=${CLUSTER_NAME}
+      - node.name=node03
+      - discovery.seed_hosts=node01,node02
+      - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+      - ./elasticsearch/data03:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+
+  kibana:
+    container_name: kibana
+    #image: kibana:8.3.3
+    build:
+      context: kibana/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - '$KIBANA_PORT:5601'
+    environment:
+      ELASTICSEARCH_URL: http://node01:$ES_PORT
+      ELASTICSEARCH_HOSTS: '["http://node01:$ES_PORT","http://node02:$ES_PORT","http://node03:$ES_PORT"]'
+    depends_on:
+      - node01
+    networks:
+      - elastic
+      
+  #https://quoeamaster.medium.com/deploying-metricbeat-side-by-side-with-elasticsearch-in-docker-42c769d95be
+  metricbeat:
+    container_name: metricbeat
+    #image: docker.elastic.co/beats/metricbeat:8.3.3
+    build:
+      context: metricbeat/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    environment:
+      ELASTICSEARCH_HOSTS: http://node01:$ES_PORT
+    volumes:
+      - ./metricbeat/metricbeat-data:/usr/share/metricbeat/data
+    depends_on:
+      - node01
+      - kibana
+    networks:
+      - elastic
+
+
+  # logstash:
+  #   container_name: logstash
+  #   #image: docker.elastic.co/beats/logstash:8.3.3
+  #   build:
+  #     context: logstash/
+  #     args:
+  #       STACK_VERSION: ${STACK_VERSION}
+  #   volumes:
+  #     - type: bind
+  #       source: ./logstash/config/logstash.yml
+  #       target: /usr/share/logstash/config/logstash.yml
+  #       read_only: true
+  #     - type: bind
+  #       source: ./logstash/pipeline
+  #       target: /usr/share/logstash/pipeline
+  #       read_only: true    
+  #   environment:
+  #     LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+  #   ports:
+  #     - "5044:5044"
+  #     - "5000:5000/tcp"
+  #     - "5000:5000/udp"
+  #     - "9600:9600"  
+  #   depends_on:
+  #     - node01
+  #   networks:
+  #     - elastic    
+
+volumes:
+  data01: 
+    driver: local
+  data02: 
+    driver: local
+  data03: 
+    driver: local
+  metricbeat-data:
+    driver: local
+networks:
+  elastic:
+    driver: bridge
