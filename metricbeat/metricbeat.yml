@@ -7,7 +7,7 @@ processors:
   - add_docker_metadata: ~
 
 output.elasticsearch:
-  hosts: '${ELASTICSEARCH_HOSTS:elasticsearch:{$ES_PORT}}'
+  hosts: '${ELASTICSEARCH_HOSTS:elasticsearch:9200}'
   username: '${ELASTICSEARCH_USERNAME:}'
   password: '${ELASTICSEARCH_PASSWORD:}'
 
@@ -16,4 +16,4 @@ metricbeat.modules:
 - module: elasticsearch
   xpack.enabled: true
   period: 10s
-  hosts: ["http://node01:{$ES_PORT}"]
+  hosts: ["http://node01:9200"]

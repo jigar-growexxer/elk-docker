@@ -109,34 +109,33 @@ services:
     networks:
       - elastic
 
-
-  # logstash:
-  #   container_name: logstash
-  #   #image: docker.elastic.co/beats/logstash:8.3.3
-  #   build:
-  #     context: logstash/
-  #     args:
-  #       STACK_VERSION: ${STACK_VERSION}
-  #   volumes:
-  #     - type: bind
-  #       source: ./logstash/config/logstash.yml
-  #       target: /usr/share/logstash/config/logstash.yml
-  #       read_only: true
-  #     - type: bind
-  #       source: ./logstash/pipeline
-  #       target: /usr/share/logstash/pipeline
-  #       read_only: true    
-  #   environment:
-  #     LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-  #   ports:
-  #     - "5044:5044"
-  #     - "5000:5000/tcp"
-  #     - "5000:5000/udp"
-  #     - "9600:9600"  
-  #   depends_on:
-  #     - node01
-  #   networks:
-  #     - elastic    
+  logstash:
+    container_name: logstash
+    #image: docker.elastic.co/beats/logstash:8.3.3
+    build:
+      context: logstash/
+      args:
+        STACK_VERSION: ${STACK_VERSION}
+    volumes:
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true    
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"  
+    depends_on:
+      - node01
+    networks:
+      - elastic    
 
 volumes:
   data01: 
