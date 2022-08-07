@@ -3,7 +3,6 @@ network.host: 0.0.0.0
 
 # xpack.license.self_generated.type: trial
 # xpack.security.enabled: true
-# xpack.monitoring.collection.enabled: true
 
 cluster.initial_master_nodes: [node01, node02, node03]  
 bootstrap.memory_lock: true
@@ -11,3 +10,4 @@ bootstrap.memory_lock: true
 xpack.security.enabled: false
 xpack.ml.enabled: false
 xpack.security.enrollment.enabled: false
+xpack.monitoring.collection.enabled: true
